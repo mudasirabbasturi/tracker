@@ -19,7 +19,7 @@ class TrackerUI(ctk.CTk):
         self.on_logout_callback = on_logout_callback
         self.on_check_in_callback = on_check_in_callback
         self.on_check_out_callback = on_check_out_callback
-        self.admin_password = "bidenterprise#12"  # Default fallback
+        self.admin_password = "bidenterprise"  # Default fallback
 
         ctk.set_appearance_mode("Dark")
         ctk.set_default_color_theme("blue")

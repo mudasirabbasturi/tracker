@@ -44,6 +44,7 @@ _app_config = load_app_config()
 API_BASE_URL = _app_config["api_base_url"]
 ADMIN_PASSWORD = _app_config["admin_password"]
 SCREENSHOT_INTERVAL = _app_config["screenshot_interval"]
+SYNC_INTERVAL = int(_app_config.get("tracker_sync_interval") or 30)
 
 tracker = None
 ui = None
@@ -110,8 +111,21 @@ def start_instance_listener():
 def remove_lock():
     pass
 
-# ─── Tray Icon ───────────────────────────────────────────────────────────────
+# ─── Tray Icon ───────────────────────────────────────────────────────
 def create_image():
+    # Attempt to load the custom icon from assets
+    icon_path = os.path.join(PROJECT_ROOT, "assets", "icon.png")
+    if getattr(sys, 'frozen', False):
+        # When running as EXE, assets is in sys._MEIPASS
+        icon_path = os.path.join(sys._MEIPASS, "assets", "icon.png")
+    
+    if os.path.exists(icon_path):
+        try:
+            return Image.open(icon_path)
+        except Exception as e:
+            print(f"Error loading icon: {e}")
+
+    # Fallback to generated image
     image = Image.new('RGB', (64, 64), (15, 23, 42))
     dc = ImageDraw.Draw(image)
     dc.ellipse((8, 8, 56, 56), fill="#2563EB")
@@ -169,11 +183,11 @@ def sync_settings(user_data):
         return
         
     def _do_sync():
-        global ADMIN_PASSWORD, API_BASE_URL, SCREENSHOT_INTERVAL, tracker
+        global ADMIN_PASSWORD, API_BASE_URL, SCREENSHOT_INTERVAL, SYNC_INTERVAL, tracker
         import datetime
         now_str = datetime.datetime.now().strftime("%H:%M:%S")
         try:
-            # 1. Fetch Global Settings (Interval, Password, Allowed IPs)
+            # 1. Fetch Global Settings (Interval, Password, Allowed IPs, Sync Interval)
             resp = requests.get(f"{API_BASE_URL}/api/track/settings", timeout=10)
             settings = {}
             if resp.status_code == 200:
@@ -220,6 +234,17 @@ def sync_settings(user_data):
                 config_changed = True
                 if tracker: tracker.screenshot_interval = interval
 
+            new_sync_interval = settings.get("tracker_sync_interval")
+            if new_sync_interval and int(new_sync_interval) != SYNC_INTERVAL:
+                SYNC_INTERVAL = int(new_sync_interval)
+                config["tracker_sync_interval"] = SYNC_INTERVAL
+                config_changed = True
+
+            new_allowed_ips = settings.get("tracker_allowed_ips", [])
+            if new_allowed_ips != config.get("allowed_ips"):
+                config["allowed_ips"] = new_allowed_ips
+                config_changed = True
+
             if config_changed:
                 with open(APP_CONFIG_FILE, "w") as f:
                     json.dump(config, f)
@@ -242,7 +267,7 @@ def sync_settings(user_data):
             # Reschedule the next sync
             current_config = load_config()
             if current_config.get("user"):
-                threading.Timer(300, sync_settings, [current_config.get("user")]).start()
+                threading.Timer(SYNC_INTERVAL, sync_settings, [current_config.get("user")]).start()
             
     threading.Thread(target=_do_sync, daemon=True).start()
 
@@ -361,16 +386,11 @@ def update_tray_menu(user_name):
     if tray_icon:
         tray_icon.menu = menu
 
-def open_logs_folder(icon):
-    if os.path.exists(DATA_DIR):
-        os.startfile(DATA_DIR)
-
 def setup_tray(user_name="Not Logged In"):
     global tray_icon
     menu = pystray.Menu(
         item(f'User: {user_name}', lambda: None, enabled=False),
-        item('Show/Hide Tracker', toggle_window, default=True),
-        item('Open Data Folder', open_logs_folder)
+        item('Show/Hide Tracker', toggle_window, default=True)
     )
     tray_icon = pystray.Icon("BidwinnersTracker", create_image(), "Bidwinners Tracker", menu)
     tray_icon.run_detached()
@@ -378,8 +398,6 @@ def setup_tray(user_name="Not Logged In"):
 # ─── Main ─────────────────────────────────────────────────────────────────────
 def main():
     global ui, tracker
-
-    os.makedirs(DATA_DIR, exist_ok=True)
 
     # Register autostart so app launches on every Windows startup
     register_autostart()

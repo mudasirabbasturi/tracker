@@ -6,6 +6,8 @@
 #define MyAppPublisher "BidEnterprise"
 #define MyAppExeName "BidwinnersTracker.exe"
 
+#define MyAppIcon "assets\icon.ico"
+
 [Setup]
 AppId={{8F3B1A2C-D4E5-4F6A-B7C8-9D0E1F2A3B4C}
 AppName={#MyAppName}
@@ -15,6 +17,7 @@ DefaultDirName={commonpf64}\{#MyAppName}
 DefaultGroupName={#MyAppName}
 OutputDir=installer_output
 OutputBaseFilename=BidwinnersTracker_Setup_v{#MyAppVersion}
+SetupIconFile={#MyAppIcon}
 Compression=lzma2
 SolidCompression=yes
 WizardStyle=modern
@@ -32,9 +35,9 @@ Name: "desktopicon"; Description: "Create a &desktop shortcut"; GroupDescription
 Source: "dist\{#MyAppExeName}"; DestDir: "{app}"; Flags: ignoreversion
 
 [Icons]
-Name: "{group}\{#MyAppName}"; Filename: "{app}\{#MyAppExeName}"
+Name: "{group}\{#MyAppName}"; Filename: "{app}\{#MyAppExeName}"; IconFilename: "{app}\{#MyAppExeName}"
 Name: "{group}\Uninstall {#MyAppName}"; Filename: "{uninstallexe}"
-Name: "{commondesktop}\{#MyAppName}"; Filename: "{app}\{#MyAppExeName}"; Tasks: desktopicon
+Name: "{commondesktop}\{#MyAppName}"; Filename: "{app}\{#MyAppExeName}"; Tasks: desktopicon; IconFilename: "{app}\{#MyAppExeName}"
 
 [Code]
 // Custom page to collect the API domain from the user during installation
@@ -66,8 +69,23 @@ begin
     ForceDirectories(DataDir);
 
     ConfigFile := ExpandConstant('{app}\config.json');
-    ConfigContent := '{"api_base_url": "' + DomainPage.Values[0] + '", "admin_password": "bidwinners#12", "screenshot_interval": 300, "allowed_ips": []}';
+    ConfigContent := '{"api_base_url": "' + DomainPage.Values[0] + '", "admin_password": "bidwinners#12", "screenshot_interval": 300, "tracker_sync_interval": 30, "allowed_ips": []}';
     SaveStringToFile(ConfigFile, ConfigContent, False);
+  end;
+end;
+
+procedure CurUninstallStepChanged(CurUninstallStep: TUninstallStep);
+var
+  DataDir: string;
+begin
+  if CurUninstallStep = usPostUninstall then
+  begin
+    // Delete the persistent data directory in %APPDATA%
+    DataDir := ExpandConstant('{userappdata}\BidwinnersTracker');
+    if DirExists(DataDir) then
+    begin
+      DelTree(DataDir, True, True, True);
+    end;
   end;
 end;
 

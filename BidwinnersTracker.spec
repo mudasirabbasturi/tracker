@@ -9,6 +9,8 @@ a = Analysis(
     datas=[
         # Include the src folder (ui.py, tracker.py)
         ('src', 'src'),
+        # Include the assets folder (icons, etc.)
+        ('assets', 'assets'),
         # config.json will be placed by the installer separately
     ],
     hiddenimports=[
@@ -53,4 +55,5 @@ exe = EXE(
     codesign_identity=None,
     entitlements_file=None,
     # icon='assets/icon.ico',  # Uncomment and add your .ico file
+    icon='assets/icon.ico',
 )

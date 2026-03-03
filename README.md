@@ -46,5 +46,10 @@ Prompts for the admin password (bidenterprise#12) — same as the Logout button.
 
 
 
-IPs 
+get IPs from
 https://api.ipify.org/
+
+close the exe 
+taskkill /IM pythonw.exe /F
+and restart it 
+main.pyw

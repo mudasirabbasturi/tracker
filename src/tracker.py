@@ -1,4 +1,4 @@
-
+import sys
 import datetime
 import io
 import json
@@ -10,8 +10,29 @@ import requests
 from PIL import ImageGrab
 
 # --- Configuration ---
-PROJECT_ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
-DATA_DIR = os.path.join(PROJECT_ROOT, "data")
+def get_project_root():
+    """Get the project root, handling PyInstaller bundled environment."""
+    if getattr(sys, 'frozen', False):
+        # Running as a bundled executable
+        return os.path.dirname(sys.executable)
+    # Running as a script
+    return os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+
+def get_persistent_data_dir():
+    """Get a persistent directory for storing user data, outside the temp folder."""
+    if os.name == 'nt': # Windows
+        base_dir = os.environ.get('APPDATA')
+        if not base_dir:
+            base_dir = os.path.expanduser('~')
+        path = os.path.join(base_dir, 'BidwinnersTracker')
+    else:
+        path = os.path.expanduser('~/.bidwinners-tracker')
+    
+    os.makedirs(path, exist_ok=True)
+    return path
+
+PROJECT_ROOT = get_project_root()
+DATA_DIR = get_persistent_data_dir()
 LOG_FILE = os.path.join(DATA_DIR, "tracker.log")
 APP_CONFIG_FILE = os.path.join(PROJECT_ROOT, "config.json")
 
