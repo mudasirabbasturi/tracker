@@ -2,7 +2,9 @@
 
 ## How to Build the Windows Installer
 
-### Step 1: Install Dependencies
+> **Always run all steps every time you build** — this ensures a clean, consistent build.
+
+### Step 1: Install / Update Dependencies
 
 Open a terminal in the `tracker-apps` folder and run:
 
@@ -22,7 +24,7 @@ This creates `dist/BidwinnersTracker.exe` — a single self-contained executable
 
 ### Step 3: Build the Windows Installer
 
-1. Download and install **Inno Setup** from: https://jrsoftware.org/isinfo.php (free)
+1. Download and install **Inno Setup** from: https://jrsoftware.org/isinfo.php (free) *(first time only)*
 2. Open `installer.iss` in the Inno Setup Compiler.
 3. Click **Build → Compile** (or press `F9`).
 4. The installer will be in `installer_output/BidwinnersTracker_Setup_v1.0.0.exe`
@@ -53,3 +55,7 @@ If the server URL changes, just edit `config.json` in the install folder (defaul
 Only Python needs to be installed on the **build machine** (the PC that runs the build steps above).
 
 The **end-user PCs** that receive `BidwinnersTracker_Setup_v1.0.0.exe` do **NOT** need Python installed — everything is bundled inside the `.exe`.
+
+
+
+taskkill /f /im BidwinnersTracker.exe

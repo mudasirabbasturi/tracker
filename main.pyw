@@ -196,7 +196,8 @@ def sync_settings(user_data):
             # 2. Fetch/Refresh User Permission Status
             user_resp = requests.get(f"{API_BASE_URL}/api/track/users", timeout=10)
             users_list = user_resp.json() if user_resp.status_code == 200 else []
-            curr_user = next((u for u in users_list if u['id'] == user_data['id']), user_data)
+            # Safety: Compare IDs as strings to avoid type mismatch
+            curr_user = next((u for u in users_list if str(u['id']) == str(user_data['id'])), user_data)
             
             # 3. Determine if Tracking is Allowed
             allowed_ips = settings.get("tracker_allowed_ips", [])
