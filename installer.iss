@@ -33,11 +33,13 @@ Name: "desktopicon"; Description: "Create a &desktop shortcut"; GroupDescription
 [Files]
 ; The main bundled executable (built by PyInstaller)
 Source: "dist\{#MyAppExeName}"; DestDir: "{app}"; Flags: ignoreversion
+; Copy the icon so shortcuts can reference it directly
+Source: "assets\icon.ico"; DestDir: "{app}"; Flags: ignoreversion
 
 [Icons]
-Name: "{group}\{#MyAppName}"; Filename: "{app}\{#MyAppExeName}"; IconFilename: "{app}\{#MyAppExeName}"
+Name: "{group}\{#MyAppName}"; Filename: "{app}\{#MyAppExeName}"; IconFilename: "{app}\icon.ico"
 Name: "{group}\Uninstall {#MyAppName}"; Filename: "{uninstallexe}"
-Name: "{commondesktop}\{#MyAppName}"; Filename: "{app}\{#MyAppExeName}"; Tasks: desktopicon; IconFilename: "{app}\{#MyAppExeName}"
+Name: "{commondesktop}\{#MyAppName}"; Filename: "{app}\{#MyAppExeName}"; Tasks: desktopicon; IconFilename: "{app}\icon.ico"
 
 [Code]
 // Custom page to collect the API domain from the user during installation
@@ -64,11 +66,11 @@ var
 begin
   if CurStep = ssPostInstall then
   begin
-    // Write config.json with the user's domain
-    DataDir := ExpandConstant('{app}\data');
+    // Write config.json to %APPDATA%\BidwinnersTracker\ (always writable)
+    DataDir := ExpandConstant('{userappdata}\BidwinnersTracker');
     ForceDirectories(DataDir);
 
-    ConfigFile := ExpandConstant('{app}\config.json');
+    ConfigFile := ExpandConstant('{userappdata}\BidwinnersTracker\config.json');
     ConfigContent := '{"api_base_url": "' + DomainPage.Values[0] + '", "admin_password": "bidwinners#12", "screenshot_interval": 300, "tracker_sync_interval": 30, "allowed_ips": []}';
     SaveStringToFile(ConfigFile, ConfigContent, False);
   end;

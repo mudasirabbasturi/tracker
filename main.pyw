@@ -13,7 +13,7 @@ from src.ui import TrackerUI
 
 CONFIG_FILE = os.path.join(DATA_DIR, "config.json")
 LOCK_FILE = os.path.join(DATA_DIR, "tracker.lock")
-APP_CONFIG_FILE = os.path.join(PROJECT_ROOT, "config.json")
+APP_CONFIG_FILE = os.path.join(DATA_DIR, "config.json")
 
 # ─── Load configurable API URL and other settings ────────────────────────────
 def load_app_config():

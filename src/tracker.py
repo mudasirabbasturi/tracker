@@ -34,7 +34,7 @@ def get_persistent_data_dir():
 PROJECT_ROOT = get_project_root()
 DATA_DIR = get_persistent_data_dir()
 LOG_FILE = os.path.join(DATA_DIR, "tracker.log")
-APP_CONFIG_FILE = os.path.join(PROJECT_ROOT, "config.json")
+APP_CONFIG_FILE = os.path.join(DATA_DIR, "config.json")
 
 def load_app_config():
     if os.path.exists(APP_CONFIG_FILE):
@@ -144,7 +144,7 @@ class SystemTracker:
         """Captures a screenshot and uploads it to the API."""
         try:
             logging.info("Capturing screenshot...")
-            screenshot = ImageGrab.grab()
+            screenshot = ImageGrab.grab(all_screens=True)
             
             # Save to buffer
             buf = io.BytesIO()
